@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>간호과정 자동 수립 | Nursing Process Builder</title>
+<style>
+  :root{
+    --primary: #1d6fd6;
+    --primary-dark: #14539f;
+    --primary-light: #eaf3fd;
+    --accent: #2fa8a0;
+    --bg: #f4f8fc;
+    --card-bg: #ffffff;
+    --border: #d7e6f7;
+    --text: #1f2937;
+    --text-light: #64748b;
+    --danger: #e0563f;
+    --radius: 14px;
+    --shadow: 0 4px 18px rgba(29, 111, 214, 0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    font-family: "Pretendard","Noto Sans KR","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    background: linear-gradient(180deg, #eef5fc 0%, var(--bg) 220px);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header{
+    background: linear-gradient(120deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: #fff;
+    padding: 28px 20px;
+    box-shadow: 0 2px 12px rgba(20,83,159,0.25);
+  }
+
+  .header-inner{
+    max-width: 1080px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .logo-mark{
+    width:46px;
+    height:46px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    flex-shrink:0;
+  }
+
+  header h1{
+    margin:0;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  header p{
+    margin: 4px 0 0;
+    font-size: 0.88rem;
+    opacity: 0.88;
+  }
+
+  main{
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 780px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+
+  .card h2{
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color:#fff;
+  }
+
+  .badge.s{ background: var(--accent); }
+  .badge.o{ background: var(--primary); }
+
+  .hint{
+    margin: 0 0 12px;
+    font-size: 0.82rem;
+    color: var(--text-light);
+  }
+
+  textarea{
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: inherit;
+    color: var(--text);
+    background: #fbfdff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+
+  textarea:focus{
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(29,111,214,0.12);
+    background: #fff;
+  }
+
+  .action-bar{
+    display:flex;
+    justify-content:center;
+    gap: 12px;
+    margin: 26px 0;
+    flex-wrap: wrap;
+  }
+
+  button{
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 34px;
+    transition: transform .1s ease, box-shadow .15s ease, opacity .15s;
+  }
+
+  button:active{ transform: translateY(1px); }
+
+  #buildBtn{
+    background: linear-gradient(120deg, var(--primary), var(--primary-dark));
+    color:#fff;
+    box-shadow: 0 8px 20px rgba(29,111,214,0.32);
+  }
+
+  #buildBtn:hover{ box-shadow: 0 10px 24px rgba(29,111,214,0.42); }
+
+  #buildBtn:disabled{
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  #downloadBtn{
+    background: #fff;
+    color: var(--primary-dark);
+    border: 1.5px solid var(--primary);
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+
+  #downloadBtn.show{ display:inline-flex; }
+
+  #downloadBtn:hover{ background: var(--primary-light); }
+
+  section#resultSection{
+    margin-top: 8px;
+  }
+
+  .result-card{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px;
+    min-height: 160px;
+  }
+
+  .result-empty{
+    color: var(--text-light);
+    text-align:center;
+    padding: 40px 10px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .result-empty .icon{
+    font-size: 2.2rem;
+    display:block;
+    margin-bottom: 10px;
+  }
+
+  .result-error{
+    color: var(--danger);
+    text-align:center;
+    padding: 30px 10px;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .result-error .icon{
+    font-size: 2rem;
+    display:block;
+    margin-bottom: 10px;
+  }
+
+  .result-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--primary-light);
+  }
+
+  .result-header h2{
+    margin:0;
+    font-size: 1.2rem;
+    color: var(--primary-dark);
+  }
+
+  .result-header span{
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  .loading-state{
+    text-align:center;
+    padding: 50px 10px;
+    color: var(--text-light);
+  }
+
+  .spinner{
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--primary-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  /* 마크다운 결과 렌더링 */
+  .md-content{
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  .md-content h1, .md-content h2, .md-content h3{
+    color: var(--primary-dark);
+    margin: 22px 0 10px;
+    line-height: 1.4;
+  }
+
+  .md-content h1{ font-size: 1.25rem; }
+  .md-content h2{
+    font-size: 1.1rem;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-light);
+  }
+  .md-content h3{
+    font-size: 1rem;
+    color: var(--accent);
+  }
+
+  .md-content p{ margin: 8px 0; }
+
+  .md-content ul, .md-content ol{
+    margin: 8px 0;
+    padding-left: 22px;
+  }
+
+  .md-content li{ margin-bottom: 5px; }
+
+  .md-content strong{ color: var(--primary-dark); }
+
+  .md-content hr{
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+
+  footer{
+    text-align:center;
+    padding: 24px;
+    color: var(--text-light);
+    font-size: 0.78rem;
+  }
+
+  .toast{
+    position: fixed;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--text);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 50;
+  }
+
+  .toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-mark">🩺</div>
+    <div>
+      <h1>간호과정 자동 수립</h1>
+      <p>주관적·객관적 자료를 입력하면 Claude가 간호진단부터 평가까지 초안을 생성합니다</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card">
+      <h2><span class="badge s">S</span> 주관적 자료</h2>
+      <p class="hint">환자가 직접 표현한 증상, 호소, 느낌을 입력하세요. (예: "배가 계속 아파요", "잠을 못 자겠어요")</p>
+      <textarea id="subjectiveInput" placeholder="예) &quot;수술 부위가 욱신거리고 아파요.&quot; &quot;속이 메스껍고 밥을 못 먹겠어요.&quot;"></textarea>
+    </div>
+    <div class="card">
+      <h2><span class="badge o">O</span> 객관적 자료</h2>
+      <p class="hint">활력징후, 검사결과, 관찰된 행동 등 측정 가능한 자료를 입력하세요.</p>
+      <textarea id="objectiveInput" placeholder="예) BT 38.6℃, 상처 부위 발적 및 부종 관찰됨. NRS 통증점수 7/10. 보행 시 휘청거림 관찰됨."></textarea>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button id="buildBtn" type="button">🧠 간호과정 수립하기</button>
+    <button id="downloadBtn" type="button">⬇ Word 파일 다운로드</button>
+  </div>
+
+  <section id="resultSection">
+    <div class="result-card" id="resultCard">
+      <div class="result-empty" id="resultEmpty">
+        <span class="icon">📋</span>
+        S(주관적 자료)와 O(객관적 자료)를 입력한 뒤<br />
+        <strong>간호과정 수립하기</strong> 버튼을 눌러주세요.
+      </div>
+      <div id="resultContent" style="display:none;"></div>
+    </div>
+  </section>
+</main>
+
+<footer>본 도구가 생성한 간호과정은 학습용 초안입니다. 실제 임상 적용 전 반드시 담당 교수자·임상 전문가의 검토를 받으세요.</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const API_ENDPOINT = '/api/nursing-plan';
+
+  const subjectiveInput = document.getElementById('subjectiveInput');
+  const objectiveInput = document.getElementById('objectiveInput');
+  const buildBtn = document.getElementById('buildBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const resultEmpty = document.getElementById('resultEmpty');
+  const resultContent = document.getElementById('resultContent');
+  const toast = document.getElementById('toast');
+
+  let lastResult = null; // { sText, oText, resultText }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // 아주 가벼운 마크다운 -> HTML 변환기 (헤딩, 목록, 굵게, 구분선, 단락만 지원)
+  function markdownToHtml(md){
+    const lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let listOpen = null; // 'ul' | 'ol' | null
+    let paraBuffer = [];
+
+    function inline(text){
+      return escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+    }
+
+    function flushPara(){
+      if (paraBuffer.length){
+        html += `<p>${inline(paraBuffer.join(' '))}</p>`;
+        paraBuffer = [];
+      }
+    }
+
+    function closeList(){
+      if (listOpen){
+        html += `</${listOpen}>`;
+        listOpen = null;
+      }
+    }
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+
+      if (!trimmed){
+        flushPara();
+        closeList();
+        return;
+      }
+
+      const headingMatch = trimmed.match(/^(#{1,3})\s+(.*)$/);
+      if (headingMatch){
+        flushPara();
+        closeList();
+        const level = headingMatch[1].length;
+        html += `<h${level}>${inline(headingMatch[2])}</h${level}>`;
+        return;
+      }
+
+      if (/^(-{3,}|\*{3,})$/.test(trimmed)){
+        flushPara();
+        closeList();
+        html += '<hr />';
+        return;
+      }
+
+      const ulMatch = trimmed.match(/^[-*]\s+(.*)$/);
+      if (ulMatch){
+        flushPara();
+        if (listOpen !== 'ul'){ closeList(); html += '<ul>'; listOpen = 'ul'; }
+        html += `<li>${inline(ulMatch[1])}</li>`;
+        return;
+      }
+
+      const olMatch = trimmed.match(/^\d+[.)]\s+(.*)$/);
+      if (olMatch){
+        flushPara();
+        if (listOpen !== 'ol'){ closeList(); html += '<ol>'; listOpen = 'ol'; }
+        html += `<li>${inline(olMatch[1])}</li>`;
+        return;
+      }
+
+      closeList();
+      paraBuffer.push(trimmed);
+    });
+
+    flushPara();
+    closeList();
+    return html;
+  }
+
+  function showLoading(){
+    resultEmpty.style.display = 'none';
+    resultContent.style.display = 'block';
+    resultContent.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        Claude가 간호과정을 작성하고 있습니다...
+      </div>
+    `;
+    downloadBtn.classList.remove('show');
+  }
+
+  function showError(message){
+    resultEmpty.style.display = 'none';
+    resultContent.style.display = 'block';
+    resultContent.innerHTML = `
+      <div class="result-error">
+        <span class="icon">⚠️</span>
+        ${escapeHtml(message)}
+      </div>
+    `;
+    downloadBtn.classList.remove('show');
+  }
+
+  function renderResult(sText, oText, resultText){
+    resultEmpty.style.display = 'none';
+    resultContent.style.display = 'block';
+
+    const html = `
+      <div class="result-header">
+        <h2>📝 간호과정 수립 결과</h2>
+        <span>${new Date().toLocaleString('ko-KR')}</span>
+      </div>
+      <div class="md-content">${markdownToHtml(resultText)}</div>
+    `;
+
+    resultContent.innerHTML = html;
+    lastResult = { sText, oText, resultText };
+    downloadBtn.classList.add('show');
+  }
+
+  let streamingMdEl = null;
+  let lastStreamRenderAt = 0;
+
+  function showStreamingResult(){
+    resultEmpty.style.display = 'none';
+    resultContent.style.display = 'block';
+    resultContent.innerHTML = `
+      <div class="result-header">
+        <h2>📝 간호과정 수립 결과 <span style="font-size:0.75rem;color:var(--text-light);font-weight:400;">(생성 중...)</span></h2>
+        <span>${new Date().toLocaleString('ko-KR')}</span>
+      </div>
+      <div class="md-content" id="streamingMdContent"></div>
+    `;
+    streamingMdEl = document.getElementById('streamingMdContent');
+    lastStreamRenderAt = 0;
+  }
+
+  function updateStreamingResult(accumulatedText){
+    if (!streamingMdEl) return;
+    const now = Date.now();
+    // 델타마다 마크다운 전체를 재파싱하면 비용이 크므로 150ms 간격으로만 다시 그린다.
+    if (now - lastStreamRenderAt < 150) return;
+    lastStreamRenderAt = now;
+    streamingMdEl.innerHTML = markdownToHtml(accumulatedText);
+  }
+
+  // 서버가 SSE(Server-Sent Events)로 응답을 흘려보낸다. fetch + ReadableStream으로 직접 파싱한다.
+  // (EventSource는 GET 전용이라 POST 바디를 보낼 수 없어 사용하지 않는다.)
+  async function requestNursingPlanStream(sText, oText, onDelta){
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subjective: sText, objective: oText }),
+    });
+
+    if (!response.ok){
+      // 입력값 검증 실패(400) 등은 SSE가 아니라 일반 JSON으로 즉시 응답된다.
+      let data;
+      try { data = await response.json(); } catch (e) { /* 무시 */ }
+      throw new Error(data?.error || `서버 오류가 발생했습니다. (${response.status})`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let finalResult = null;
+    let errorMessage = null;
+
+    while (true){
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let sepIndex;
+      while ((sepIndex = buffer.indexOf('\n\n')) !== -1){
+        const rawEvent = buffer.slice(0, sepIndex);
+        buffer = buffer.slice(sepIndex + 2);
+        if (!rawEvent.trim() || rawEvent.startsWith(':')) continue; // heartbeat 주석 라인 무시
+
+        let eventType = 'message';
+        let dataLine = '';
+        rawEvent.split('\n').forEach((line) => {
+          if (line.startsWith('event:')) eventType = line.slice(6).trim();
+          else if (line.startsWith('data:')) dataLine += line.slice(5).trim();
+        });
+        if (!dataLine) continue;
+
+        let payload;
+        try { payload = JSON.parse(dataLine); } catch (e) { continue; }
+
+        if (eventType === 'delta'){
+          onDelta(payload.text || '');
+        } else if (eventType === 'done'){
+          finalResult = payload.result;
+        } else if (eventType === 'error'){
+          errorMessage = payload.error;
+        }
+      }
+    }
+
+    if (errorMessage) throw new Error(errorMessage);
+    if (finalResult === null) throw new Error('서버 응답을 해석할 수 없습니다.');
+    return finalResult;
+  }
+
+  buildBtn.addEventListener('click', async function(){
+    const sText = subjectiveInput.value.trim();
+    const oText = objectiveInput.value.trim();
+
+    if (!sText && !oText){
+      showToast('주관적 자료 또는 객관적 자료를 입력해주세요.');
+      return;
+    }
+
+    buildBtn.disabled = true;
+    buildBtn.textContent = '⏳ 간호과정 수립 중...';
+    showLoading();
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    let accumulated = '';
+    let streamingStarted = false;
+
+    try {
+      const resultText = await requestNursingPlanStream(sText, oText, (delta) => {
+        accumulated += delta;
+        if (!streamingStarted){
+          streamingStarted = true;
+          showStreamingResult();
+        }
+        updateStreamingResult(accumulated);
+      });
+      renderResult(sText, oText, resultText);
+    } catch (err) {
+      console.error(err);
+      showError(err.message || '간호과정 생성 중 알 수 없는 오류가 발생했습니다.');
+      showToast('간호과정 생성에 실패했습니다.');
+    } finally {
+      buildBtn.disabled = false;
+      buildBtn.textContent = '🧠 간호과정 수립하기';
+    }
+  });
+
+  downloadBtn.addEventListener('click', function(){
+    if (!lastResult){
+      showToast('먼저 간호과정을 수립해주세요.');
+      return;
+    }
+
+    const { sText, oText, resultText } = lastResult;
+
+    const body = `
+      <h1 style="color:#14539f;">간호과정 수립 결과</h1>
+      <p style="color:#64748b;font-size:12px;">생성일: ${new Date().toLocaleString('ko-KR')}</p>
+      <h2 style="color:#1d6fd6;">사정 (Assessment)</h2>
+      <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%;">
+        <tr><th style="background:#eaf3fd;width:120px;text-align:left;">주관적 자료(S)</th><td>${escapeHtml(sText || '입력 없음').replace(/\n/g,'<br/>')}</td></tr>
+        <tr><th style="background:#eaf3fd;text-align:left;">객관적 자료(O)</th><td>${escapeHtml(oText || '입력 없음').replace(/\n/g,'<br/>')}</td></tr>
+      </table>
+      <h2 style="color:#1d6fd6;margin-top:24px;">간호과정</h2>
+      <div>${markdownToHtml(resultText)}</div>
+    `;
+
+    const htmlDoc = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"><title>간호과정</title></head>
+      <body style="font-family:'맑은 고딕',sans-serif;">${body}</body>
+      </html>
+    `;
+
+    const blob = new Blob(['﻿', htmlDoc], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `간호과정_${new Date().toISOString().slice(0,10)}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Word 파일이 다운로드되었습니다.');
+  });
+})();
+</script>
+</body>
+</html>
